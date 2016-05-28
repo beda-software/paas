@@ -1,0 +1,12 @@
+#!/bin/bash
+DIRECTORY="/home/backups/$1/`date +%Y/%m/`"
+mkdir -p $DIRECTORY
+docker run \
+  --rm \
+  -e PGPASSWORD={{ lookup('password', 'roles/ir4y.broserver/files/password/db/postgres length=15') }} \
+  -v $DIRECTORY:/data \
+  --link postgresql-server:db \
+  postgres:9.4 \
+    pg_dump -Fc -U postgres \
+            -h db \
+            -p 5432 -f /data/$1"."`date +%d.%m.%Y-%H:%M.dump` $1

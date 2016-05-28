@@ -1,0 +1,5 @@
+*.swp
+.vagrant
+*.pyc
+*.retry
+password

@@ -1,0 +1,45 @@
+---
+use_build: false
+branch: master
+repository: "ssh://git@git.bro.agency:10022/bro/{{name}}.git"
+registry: ""
+
+use_postgres: true
+postgres_superuser_password: "{{ lookup('password', 'password/db/postgres length=15') }}"
+postgres_app_password: "{{ lookup('password', 'password/db/' + name + ' length=15') }}"
+
+use_redis: false
+redis_image: redis:2.8
+
+use_volumes: false
+volumes: []
+
+use_web_worker: true
+web_worker_image: "{{name}}-core:latest"
+web_worker_service: "{{name}}-core"
+web_worker_command: ""
+web_worker_ports: []
+web_worker_count: 1
+web_worker_state: "reloaded"
+web_worker_env: {}
+
+use_delay_job_worker: false
+delay_job_worker_image: "{{name}}-core:latest"
+delay_job_worker_command: "celery -B -A {{name}} worker"
+delay_job_worker_count: 1
+delay_job_worker_env: {}
+
+default_env:
+  DATABASE_URL: "postgres://{{name}}:{{postgres_app_password}}@db/{{name}}"
+  REDIS_URL: "redis://{{name}}-redis/"
+  DEBUG: False
+env: {}
+default_links:
+  - postgresql-server:db
+links: []
+
+server_name: "{{ name }}.bro.agency"
+
+use_media: true
+media_path_at_container: "/{{name}}/media"
+caches: {}

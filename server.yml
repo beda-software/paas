@@ -1,0 +1,18 @@
+---
+- name: Install docker and containers
+  hosts: bro-host
+  sudo: true
+
+  roles:
+   - {role: angstwad.docker_ubuntu, tags: ['docker', 'provision']}
+   #- {role: kamaln7.swapfile, tags: ['swapfile', 'provision']} # Enable swapfile for lowmemory test server
+   - {role: ir4y.broserver, tags: ['broserver', 'provision']}
+
+   - {role: ir4y.docker_app,
+      name: 'hello-world',
+      use_build: true,
+      repository: 'https://github.com/Brogency/hello-world.git',
+      #server_name: 'place your server ip addres here',
+      server_name: '139.59.131.178',
+      tags: ['hello-world']
+   }

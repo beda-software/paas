@@ -1,0 +1,5 @@
+#!/bin/bash
+export  PGPASSWORD={{ lookup('password', 'roles/ir4y.broserver/files/password/db/postgres length=15') }}
+for tbl in `psql -U postgres -h localhost -p 5432 -qAt -c "select tablename from pg_tables where schemaname = 'public';" $1` ; do
+  psql -U postgres -h localhost -p 5432 -c "alter table $tbl owner to $2" $1 ;
+done

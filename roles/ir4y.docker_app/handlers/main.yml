@@ -1,0 +1,5 @@
+---
+- name: Rebuild container
+  shell: fab build
+  args:
+    chdir: "/home/build/projects/{{ name }}"
