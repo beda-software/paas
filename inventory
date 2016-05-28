@@ -1,5 +1,4 @@
 [bro-host]
-139.59.131.178
 ;place your server ip addres here
 
 [bro-host:vars]

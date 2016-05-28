@@ -12,7 +12,6 @@
       name: 'hello-world',
       use_build: true,
       repository: 'https://github.com/Brogency/hello-world.git',
-      #server_name: 'place your server ip addres here',
-      server_name: '139.59.131.178',
+      server_name: 'place your server ip addres here',
       tags: ['hello-world']
    }
