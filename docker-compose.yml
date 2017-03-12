@@ -1,0 +1,11 @@
+version: '3'
+services:
+  ansible:
+    build: ./
+    command: deploy
+    volumes:
+    - ./:/app/user
+    - ~/.ssh:/root/.ssh
+    environment:
+      # Place your server ip adderss here
+      SERVER_IP: 127.0.0.1

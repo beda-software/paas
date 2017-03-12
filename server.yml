@@ -1,17 +1,32 @@
 ---
+- name: Install python
+  hosts: bro-host
+  gather_facts: no
+  become: true
+
+  pre_tasks:
+    - name: check python availability
+      raw: test -e /usr/bin/python
+      register: test
+      changed_when: false
+      failed_when: false
+
+    - name: install python-minimal package
+      raw: sudo apt update && sudo apt install -y python-minimal
+      when: test|failed
+
 - name: Install docker and containers
   hosts: bro-host
-  sudo: true
-
+  become: true
   roles:
    - {role: angstwad.docker_ubuntu, tags: ['docker', 'provision']}
-   #- {role: kamaln7.swapfile, tags: ['swapfile', 'provision']} # Enable swapfile for lowmemory test server
+   - {role: kamaln7.swapfile, tags: ['swapfile', 'provision']}
    - {role: ir4y.broserver, tags: ['broserver', 'provision']}
 
    - {role: ir4y.docker_app,
       name: 'hello-world',
-      use_build: true,
-      repository: 'https://github.com/Brogency/hello-world.git',
-      server_name: 'place your server ip addres here',
+      image: ' brogency/hello-world',
+      server_name: '{{ lookup("env","SERVER_IP") }}',
+      web_worker_count: 3,
       tags: ['hello-world']
    }
