@@ -6,18 +6,17 @@ postgres_app_password: "{{ lookup('password', 'password/db/' + name + ' length=1
 use_redis: false
 redis_image: redis:3-alpine
 
-use_web_worker: true
 web_worker_image: "{{image}}"
+web_worker_base_name: "{{ image.split('/')[-1] }}"
 web_worker_command: ""
 web_worker_ports: []
 web_worker_count: 1
 web_worker_state: "reloaded"
 web_worker_env: {}
 
-use_delay_job_worker: false
 delay_job_worker_image: "{{image}}"
 delay_job_worker_command: "celery -B -A {{name}} worker"
-delay_job_worker_count: 1
+delay_job_worker_count: 0
 delay_job_worker_env: {}
 
 default_env:

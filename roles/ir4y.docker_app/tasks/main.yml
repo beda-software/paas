@@ -20,51 +20,47 @@
   when: use_postgres
 
 - name: Run {{ name }} redis
-  docker:
+  docker_container:
     name: "{{ name }}-redis"
-    state: reloaded
     image: "{{ redis_image }}"
     restart_policy: always
   when: use_redis
 
-- name: Run {{name}} web worker
-  docker:
-    name: "{{name}}-web-worker"
+- name: Run {{name}} web workers
+  docker_container:
+    name: "{{name}}-web-worker-{{item}}"
     image: "{{web_worker_image}}"
     restart_policy: always
     command: "{{ web_worker_command }}"
-    count: "{{ web_worker_count }}"
     env: "{{ default_env|merge(env)|merge(web_worker_env) }}"
-    ports: "{{ [] + web_worker_ports }}"
   tags:
   - webworker
   - deploy
-  when: use_web_worker
+  with_sequence: count="{{web_worker_count}}"
 
-- name: Run {{ name }} delay job worker
-  docker:
+- name: Run {{ name }} delay job workers
+  docker_container:
     name: "{{ name }}-delay-job-worker"
     image: "{{ delay_job_worker_image }}"
     restart_policy: always
-    command: "{{ delay_job_command }}"
-    count: "{{ delay_job_worker_count }}"
+    command: "{{ delay_job_worker_command }}"
     env: "{{ default_env|merge(env)|merge(delay_job_worker_env) }}"
   tags:
-  - delayjobworker
+  - delay_job_worker
   - deploy
-  when: use_delay_job_worker
+  with_sequence: count="{{delay_job_worker_count}}"
 
-- name: Setup {{ name }} web_worker
+- name: Configure balancer for {{ name }} web_worker
   etcd:
-    state: "present"
+    state: present
     host: "{{ ansible_docker0['ipv4']['address'] }}"
     port: 4001
     key: "{{ item.key }}"
     value: "{{ item.value }}"
   with_items:
-  - {key: "/hosts/{{ web_worker_image }}/enable", value: True}
-  - {key: "/hosts/{{ web_worker_image }}/server_name", value: "{{server_name}}"}
-  when: use_web_worker
+  - {key: "/hosts/{{ web_worker_base_name }}/enable", value: True}
+  - {key: "/hosts/{{ web_worker_base_name }}/server_name", value: "{{server_name}}"}
+  when: web_worker_count > 1
   tags:
   - etcd
 
@@ -73,17 +69,8 @@
     state: "present"
     host: "{{ ansible_docker0['ipv4']['address'] }}"
     port: 4001
-    key: "/hosts/{{ web_worker_image }}/caches/{{ item.name }}/path"
+    key: "/hosts/{{ web_worker_base_name }}/caches/{{ item.name }}/path"
     value: item.path
   with_items: "{{ caches }}"
   tags:
   - etcd
-
-- name: Setup database backuping for {{name}}
-  cron:
-    name: "Create backup for {{name}}"
-    minute: "{{ 59 |random}}"
-    hour: "{{ [5,6,7]|random }}"
-    job: "/usr/local/bin/backup.sh {{name}}"
-  tags:
-  - backup

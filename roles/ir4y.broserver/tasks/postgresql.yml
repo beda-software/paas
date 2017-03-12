@@ -1,5 +1,5 @@
 - name: Create postgresql-server data container
-  docker:
+  docker_container:
     name: postgres-data
     image: busybox
     state: present
@@ -7,11 +7,10 @@
     - /var/lib/postgresql/data
 
 - name: Run postgresql-server
-  docker:
+  docker_container:
     name: postgresql-server
-    state: reloaded
     restart_policy: always
-    image: postgres:9.4
+    image: postgres:9.6-alpine
     volumes_from:
     - postgres-data
     ports:

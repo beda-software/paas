@@ -1,8 +1,7 @@
 - name: Run etcd key value store
-  docker:
+  docker_container:
     name: etcd
-    image: microbox/etcd:latest
-    state: reloaded
+    image: quay.io/coreos/etcd:v2.3.8
     restart_policy: always
     command: '-name etcd-node1 --addr {{ ansible_docker0["ipv4"]["address"] }}:4001'
     ports:
@@ -10,28 +9,22 @@
     - '{{ ansible_docker0["ipv4"]["address"] }}:7001:7001'
 
 - name: Run docker registrator
-  docker:
+  docker_container:
     name: registrator
     image: gliderlabs/registrator:latest
-    state: reloaded
     restart_policy: always
     command: '-internal etcd://{{ ansible_docker0["ipv4"]["address"] }}:4001/services'
     volumes:
     - /var/run/docker.sock:/tmp/docker.sock
 
 - name: Run balancer
-  docker:
+  docker_container:
     name: balancer
     image: brogency/balancer
-    state: reloaded
     restart_policy: always
     ports:
     - 80:80
     env:
       ETCD: '{{ ansible_docker0["ipv4"]["address"] }}:4001'
-    volumes:
-    - /home/data:/home/data
-    - /home/staticsites:/home/staticsites
-    - /home/backups:/home/backups
   tags:
   - balancer

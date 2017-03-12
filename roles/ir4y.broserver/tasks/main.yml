@@ -1,15 +1,9 @@
-- name: Generate locale
-  locale_gen: name=ru_RU.UTF-8 state=present
-
 - name: Install system deps
   apt: name={{ item }} update_cache=yes
   with_items:
-  - python-psycopg2
-  - python-passlib
-  - fabric
-  - htop
-  - curl
   - postgresql-client
+  - python-psycopg2
+  - curl
 
 - name:  Install python deps
   pip:
@@ -21,45 +15,5 @@
   tags:
   - python-deps
 
-- name: Create common work dirs
-  file:
-    path: "{{item}}"
-    state: directory
-  with_items:
-  - /home/data/
-  - /home/build/
-  - /home/build/projects/
-  - /home/build/ssh/
-  - /home/backups/
-  - /home/staticsites/
-  tags:
-  - directories
-
-- name: Copy ssh known_hosts
-  copy:
-    src: ./ssh/known_hosts
-    dest: /etc/ssh/ssh_known_hosts
-
-- name: Create backup script
-  template:
-    src: scripts/backup.j2
-    dest: /usr/local/bin/backup.sh
-    owner: root
-    group: root
-    mode: "u=,g=,o=rx"
-  tags:
-  - backup
-
-- name: Create change_owner script
-  template:
-    src: scripts/change_owner.j2
-    dest: /usr/local/bin/change_owner.sh
-    owner: root
-    group: root
-    mode: "u=,g=,o=rx"
-  tags:
-  - sql_utils
-
 - include: balancer.yml
 - include: postgresql.yml
-- include: backupsrv.yml
